@@ -1,0 +1,54 @@
+CrossRef JSON format
+https://github.com/CrossRef/rest-api-doc/blob/master/api_format.md
+
+publisher is required-str
+type      is required-str
+DOI       is required-str
+funder    is not required-[Funder]
+          name    is required-str
+	  award   is not required-[str] #my methods skirts this issue
+license   is not required-[License]
+          URL     is required-URL
+ISSN      is not required-[str]
+container-title
+          is not required-[str]
+author    is not required-[Contributor]
+          affiliation is not required-[Affiliation]
+	              name is required-str
+published-print
+          is not required-Partial Date
+	  date-parts is required-[number] #nested [ [ 2006, 5, 19 ] ]
+	                                  #only year is required
+issued    is required-Partial Date
+
+--------
+need more care when grabbing xref json
+
+1) check for 404 errors
+2) check 'message-type' although with /works/ in the URL that should be 'work'
+3) check 'message-version' to detect changes
+4) url-encode DOIs
+5) check agency before attempting to retrieve metadata for a DOI
+
+from CrossRef API doc: https://github.com/CrossRef/rest-api-doc
+
+Selecting which elements to return
+
+Crossref metadata records can be quite large. Sometimes you just want a few
+elements from the schema. You can "select" a subset of elements to return
+using the select parameter. This can make your API calls much more efficient.
+For example:
+
+http://api.crossref.org/works?sample=10&select=DOI,title
+
+NOTE: this does not work with a request for a specific DOI
+--------
+You should always url-encode DOIs and parameter values when using the API.
+DOIs are notorious for including characters that break URLs (e.g. semicolons,
+hashes, slashes, ampersands, question marks, etc.).
+--------
+The API will only work for Crossref DOIs. You can test the reistration agency
+for a DOI using the following route:
+
+https://api.crossref.org/works/{doi}/agency
+--------
