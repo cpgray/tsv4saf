@@ -26,4 +26,4 @@ Metadata is extracted from the JSON data for the following metadata fields:
 * dcterms.bibliographicCitation
 * uws.contributor.affiliation (uws is a local metadata namespace)
 
-The output tab delimited data also includes, from the CrossRef data, the fields ISSN and Journal Name to help in determining copyright and embargo status of items.
+The output tab delimited data also includes, from the CrossRef data, the fields ISSN and Journal_Name to help in determining copyright and embargo status of items.
