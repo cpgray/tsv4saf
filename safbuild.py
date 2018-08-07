@@ -10,7 +10,7 @@ import time
 cr = Crossref(mailto='cpgray@uwaterloo.ca,wkroy@uwaterloo.ca')
 
 # Check for the input file
-if len(sys.argv) < 2:
+if len(sys.argv) < 3:
     print()
     print('Usage: ./safbuild.py _wos_tsv_file_')
     print('Or:    python3 safbuild.py _wos_tsv_file_')
@@ -18,7 +18,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 else:
     infile = sys.argv[1]
-
+    outfile = sys.argv[2]
 # function for conditional join
 # if there are no strings in mylist, None is output rather than ''
 def cj(delim, mylist):
@@ -78,10 +78,16 @@ for row in rows:
         else:
             row['ct'] = None
         af = set([])
-        for au in msg['author']:
-            for afil in au['affiliation']:
-                af.add(afil.get('name'))
-        row['af'] = cj('|', af).replace('\r', ' ')
+        au = msg.get('author')
+        if au != None:
+            for a in au:
+                fi = a.get('affiliation')
+                if fi != None:
+                    for afil in fi:
+                        af.add(afil.get('name'))
+            row['af'] = cj('|', af)
+        else:
+            row['af'] = None
         pp = msg.get('published-print')
         issued = msg.get('issued')
         if pp != None:
@@ -113,7 +119,7 @@ mapping = {'AF': 'dc.contributor.author',
 }
 newfieldnames = [ mapping[k] for k in fields ]
 
-with open('output.tsv', 'wt', encoding='utf-8') as outf:
+with open(outfile, 'wt', encoding='utf-8') as outf:
     w = csv.DictWriter(outf, fieldnames=newfieldnames,
                        delimiter='\t', lineterminator='\n')
     w.writeheader()
