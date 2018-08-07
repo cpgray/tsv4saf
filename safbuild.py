@@ -88,16 +88,8 @@ for row in rows:
             row['af'] = cj('|', af)
         else:
             row['af'] = None
-        pp = msg.get('published-print')
-        issued = msg.get('issued')
-        if pp != None:
-            dt = pp
-        else:
-            dt = issued
-        if len(dt['date-parts'][0]) != 3:
-            row['issued'] = dt['date-parts'][0][0]
-        else:
-            row['issued'] = datetime.date(*dt['date-parts'][0])
+        dt = msg['issued']['date-parts'][0]
+        row['issued'] = '-'.join([ str(i).zfill(2) for i in dt ])
 
 fields = ['AF', 'TI', 'DE', 'ID', 'AB', 'pb', 'ty', 'id', 'fu', 'li', 'issn',
           'ct', 'af', 'issued', 'bc']
@@ -119,9 +111,9 @@ mapping = {'AF': 'dc.contributor.author',
 }
 newfieldnames = [ mapping[k] for k in fields ]
 
-with open(outfile, 'wt', encoding='utf-8') as outf:
+with open(outfile, 'wt', encoding='utf-8', newline='') as outf:
     w = csv.DictWriter(outf, fieldnames=newfieldnames,
-                       delimiter='\t', lineterminator='\n')
+                       delimiter='\t')
     w.writeheader()
     for row in rows:
         w.writerow({mapping[k]: row[k] for k in fields})
