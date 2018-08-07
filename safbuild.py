@@ -13,7 +13,7 @@ cr = Crossref(mailto='cpgray@uwaterloo.ca,wkroy@uwaterloo.ca')
 if len(sys.argv) < 3:
     print()
     print('Usage: ./safbuild.py _wos_tsv_file_')
-    print('Or:    python3 safbuild.py _wos_tsv_file_')
+    print('Or:    python3 safbuild.py _wos_tsv_file_ _output_tsv_file_')
     print()
     sys.exit(1)
 else:
