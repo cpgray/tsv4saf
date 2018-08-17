@@ -2,6 +2,7 @@
 import sys
 import csv
 import urllib.request
+from urllib.parse import quote
 from habanero import Crossref
 import json
 import datetime
@@ -36,7 +37,7 @@ addedfields = ['pb', 'ty', 'id', 'fu', 'li', 'issn',
 headers = {'Accept': 'text/x-bibliography; style=apa'}
 for row in rows:
     time.sleep(0.1)
-    rawdoi = row['DI']
+    rawdoi = quote(row['DI'])
     if rawdoi == '':
         for k in addedfields:
             row[k] = None
