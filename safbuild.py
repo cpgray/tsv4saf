@@ -42,55 +42,65 @@ for row in rows:
         for k in addedfields:
             row[k] = None
     else:
-            
         # get a citation from dx.doi.org and add to dictionary
         doiurl = 'http://dx.doi.org/' + rawdoi
-        req = urllib.request.Request(doiurl, headers=headers) 
-        resp = urllib.request.urlopen(req)
-        citation = resp.read().decode('utf-8').strip()
-        row['bc'] = citation
+        req = urllib.request.Request(doiurl, headers=headers)
+        try:
+            resp = urllib.request.urlopen(req)
+            citation = resp.read().decode('utf-8').strip()
+            row['bc'] = citation
+        except Exception as e:
+            for k in addedfields:
+                row[k] = None
+            row['bc'] = 'DOI not found: ' + row['DI']
 
         # get Crossref data and parse the JSON data into the dictionary
-        data = cr.works(ids=rawdoi)
-        msg = data['message']
-        row['pb'] = msg['publisher']
-        row['ty'] = msg['type']
-        row['id'] = 'https://dx.doi.org/' + msg['DOI']
-        fu = msg.get('funder')
-        if fu != None:
-            row['fu'] = '|'.join([cj(': ',
-                                     [i['name'], ', '.join(i['award'])])
-                                  for i in fu])
-        else:
-            row['fu'] = None
-        li = msg.get('license')
-        if li != None:
-            row['li'] = '|'.join([i['URL'] for i in li])
-        else:
-            row['li'] = None
-        issn = msg.get('ISSN')
-        if issn != None:
-            row['issn'] = issn[-1]
-        else:
-            row['issn'] = None
-        ct = msg.get('container-title')
-        if ct != None:
-            row['ct'] = msg['container-title'][0]
-        else:
-            row['ct'] = None
-        af = set([])
-        au = msg.get('author')
-        if au != None:
-            for a in au:
-                fi = a.get('affiliation')
-                if fi != None:
-                    for afil in fi:
-                        af.add(afil.get('name'))
-            row['af'] = cj('|', af)
-        else:
-            row['af'] = None
-        dt = msg['issued']['date-parts'][0]
-        row['issued'] = '-'.join([ str(i).zfill(2) for i in dt ])
+        try:
+            data = cr.works(ids=rawdoi)
+            msg = data['message']
+            row['pb'] = msg['publisher']
+            row['ty'] = msg['type']
+            row['id'] = 'https://dx.doi.org/' + msg['DOI']
+            fu = msg.get('funder')
+            if fu != None:
+                row['fu'] = '|'.join([cj(': ',
+                                         [i['name'], ', '.join(i['award'])])
+                                      for i in fu])
+            else:
+                row['fu'] = None
+            li = msg.get('license')
+            if li != None:
+                row['li'] = '|'.join([i['URL'] for i in li])
+            else:
+                row['li'] = None
+            issn = msg.get('ISSN')
+            if issn != None:
+                row['issn'] = issn[-1]
+            else:
+                row['issn'] = None
+            ct = msg.get('container-title')
+            if ct != None:
+                row['ct'] = msg['container-title'][0]
+            else:
+                row['ct'] = None
+            af = set([])
+            au = msg.get('author')
+            if au != None:
+                for a in au:
+                    fi = a.get('affiliation')
+                    if fi != None:
+                        for afil in fi:
+                            af.add(afil.get('name'))
+                row['af'] = cj('|', af)
+            else:
+                row['af'] = None
+            dt = msg['issued']['date-parts'][0]
+            row['issued'] = '-'.join([ str(i).zfill(2) for i in dt ])
+        except Exception as e:
+            for k in addedfields:
+                row[k] = None
+            row['bc'] = 'DOI not found: ' + row['DI']
+            row['id'] = 'DOI not found: ' + row['DI']
 
 fields = ['AF', 'TI', 'DE', 'ID', 'AB', 'pb', 'ty', 'id', 'fu', 'li', 'issn',
           'ct', 'af', 'issued', 'bc']
