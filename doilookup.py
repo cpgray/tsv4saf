@@ -7,6 +7,8 @@ from habanero import Crossref
 
 cr = Crossref(mailto='cpgray@uwaterloo.ca,wkroy@uwaterloo.ca')
 
+# function for conditional join
+# if there are no strings in mylist, None is output rather than an empty string
 def cj(delim, mylist):
     return delim.join(list(filter(None, mylist)))
 

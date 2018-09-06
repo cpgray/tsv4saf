@@ -1,14 +1,8 @@
 #! /usr/bin/env python3
 import sys
 import csv
-import urllib.request
-from urllib.parse import quote
-from habanero import Crossref
-import json
-import datetime
 import time
-
-cr = Crossref(mailto='cpgray@uwaterloo.ca,wkroy@uwaterloo.ca')
+import doilookup
 
 # Check for the input file
 if len(sys.argv) < 3:
@@ -20,87 +14,19 @@ if len(sys.argv) < 3:
 else:
     infile = sys.argv[1]
     outfile = sys.argv[2]
-# function for conditional join
-# if there are no strings in mylist, None is output rather than ''
-def cj(delim, mylist):
-    return delim.join(list(filter(None, mylist)))
 
 # read in the file converting rows into dictionaries 
 rows = []
 with open(infile, 'rt', encoding='utf-8-sig') as intsv:
-    rdr = csv.DictReader(intsv, delimiter='\t')
+    rdr = csv.DictReader(intsv, restkey='extra_columns', delimiter='\t')
     for r in rdr:
         rows.append(r)
 
-addedfields = ['pb', 'ty', 'id', 'fu', 'li', 'issn',
-          'ct', 'af', 'issued', 'bc']
-headers = {'Accept': 'text/x-bibliography; style=apa'}
+newrows = []
 for row in rows:
     time.sleep(0.1)
-    rawdoi = quote(row['DI'])
-    if rawdoi == '':
-        for k in addedfields:
-            row[k] = None
-    else:
-        # get a citation from dx.doi.org and add to dictionary
-        doiurl = 'http://dx.doi.org/' + rawdoi
-        req = urllib.request.Request(doiurl, headers=headers)
-        try:
-            resp = urllib.request.urlopen(req)
-            citation = resp.read().decode('utf-8').strip()
-            row['bc'] = citation
-        except Exception as e:
-            for k in addedfields:
-                row[k] = None
-            row['bc'] = 'DOI not found: ' + row['DI']
-
-        # get Crossref data and parse the JSON data into the dictionary
-        try:
-            data = cr.works(ids=rawdoi)
-            msg = data['message']
-            row['pb'] = msg['publisher']
-            row['ty'] = msg['type']
-            row['id'] = 'https://dx.doi.org/' + msg['DOI']
-            fu = msg.get('funder')
-            if fu != None:
-                row['fu'] = '|'.join([cj(': ',
-                                         [i['name'], ', '.join(i['award'])])
-                                      for i in fu])
-            else:
-                row['fu'] = None
-            li = msg.get('license')
-            if li != None:
-                row['li'] = '|'.join([i['URL'] for i in li])
-            else:
-                row['li'] = None
-            issn = msg.get('ISSN')
-            if issn != None:
-                row['issn'] = issn[-1]
-            else:
-                row['issn'] = None
-            ct = msg.get('container-title')
-            if ct != None:
-                row['ct'] = msg['container-title'][0]
-            else:
-                row['ct'] = None
-            af = set([])
-            au = msg.get('author')
-            if au != None:
-                for a in au:
-                    fi = a.get('affiliation')
-                    if fi != None:
-                        for afil in fi:
-                            af.add(afil.get('name'))
-                row['af'] = cj('|', af)
-            else:
-                row['af'] = None
-            dt = msg['issued']['date-parts'][0]
-            row['issued'] = '-'.join([ str(i).zfill(2) for i in dt ])
-        except Exception as e:
-            for k in addedfields:
-                row[k] = None
-            row['bc'] = 'DOI not found: ' + row['DI']
-            row['id'] = 'DOI not found: ' + row['DI']
+    rowaug = doilookup.lookup(row['DI'])
+    newrows.append({**row, **rowaug})
 
 fields = ['AF', 'TI', 'DE', 'ID', 'AB', 'pb', 'ty', 'id', 'fu', 'li', 'issn',
           'ct', 'af', 'issued', 'bc']
@@ -126,5 +52,5 @@ with open(outfile, 'wt', encoding='utf-8', newline='') as outf:
     w = csv.DictWriter(outf, fieldnames=newfieldnames,
                        delimiter='\t')
     w.writeheader()
-    for row in rows:
+    for row in newrows:
         w.writerow({mapping[k]: row[k] for k in fields})
