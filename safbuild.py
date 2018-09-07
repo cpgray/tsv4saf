@@ -26,7 +26,9 @@ newrows = []
 for row in rows:
     time.sleep(0.1)
     rowaug = doilookup.lookup(row['DI'])
-    newrows.append({**row, **rowaug})
+    newrow = row.copy()
+    newrow.update(rowaug)
+    newrows.append(newrow)
 
 fields = ['AF', 'TI', 'DE', 'ID', 'AB', 'pb', 'ty', 'id', 'fu', 'li', 'issn',
           'ct', 'af', 'issued', 'bc']

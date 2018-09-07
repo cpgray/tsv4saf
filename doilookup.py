@@ -86,4 +86,4 @@ def lookup(rawdoi, row={}):
 if __name__ == '__main__':
     row = lookup(sys.argv[1])
     for k in addedfields:
-        print('{0}:\t{1}'.format(k, row[k]))
+        print('{0}:\t{1}'.format(k, row[k].encode('utf-8').decode('utf-8')))
