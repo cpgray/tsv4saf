@@ -1,13 +1,22 @@
 #! /usr/bin/env python3
 import sys
+import os.path
 import urllib.request
 from urllib.parse import quote
 from habanero import Crossref
 
+# The Crossref Habanero class can be initialized with an email address to
+# ensure traffic is put in the polite pool of Crossref servers.
+# If you would like to do this, provide an email address in an external
+# text file named polite_email.txt.
+if os.path.isfile('polite_email.txt'):
+    with open('polite_email.txt', 'rt') as email:
+        addr = email.read().strip()
+    cr = Crossref(mailto=addr)
+else:
+    cr = Crossref()
 
-cr = Crossref(mailto='cpgray@uwaterloo.ca,wkroy@uwaterloo.ca')
-
-# function for conditional join
+# function for conditional join of a list of strings
 # if there are no strings in mylist, None is output rather than an empty string
 def cj(delim, mylist):
     return delim.join(list(filter(None, mylist)))
@@ -17,6 +26,7 @@ addedfields = ['pb', 'ty', 'id', 'fu', 'li', 'issn',
 headers = {'Accept': 'text/x-bibliography; style=apa'}
 
 def lookup(rawdoi, row={}):
+    # The raw DOI is escaped because DOIs are not necessarily URL safe
     doi = quote(rawdoi)
     if doi == '':
         for k in addedfields:
