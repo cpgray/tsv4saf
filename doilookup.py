@@ -21,6 +21,9 @@ else:
 def cj(delim, mylist):
     return delim.join(list(filter(None, mylist)))
 
+def newline(indict):
+    return {f: None if v == None else v.replace('\r', ' ').replace('\n', ' ') for f, v in indict.items()}
+
 addedfields = ['pb', 'ty', 'id', 'fu', 'li', 'issn',
           'ct', 'af', 'issued', 'bc']
 headers = {'Accept': 'text/x-bibliography; style=apa'}
@@ -91,7 +94,7 @@ def lookup(rawdoi, row={}):
                 row[k] = None
             row['bc'] = 'DOI not found: ' + rawdoi
             row['id'] = 'DOI not found: ' + rawdoi
-    return row
+    return newline(row)
 
 if __name__ == '__main__':
     row = lookup(sys.argv[1])

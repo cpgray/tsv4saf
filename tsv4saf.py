@@ -7,7 +7,7 @@ import doilookup
 # Check for the input file
 if len(sys.argv) < 3:
     print()
-    print('Usage: ./tsv4saf.py [wos_tsv_file]')
+    print('Usage: ./tsv4saf.py [wos_tsv_file] [output_tsv_file]')
     print('Or:    python3 tsv4saf.py [wos_tsv_file] [output_tsv_file]')
     print()
     sys.exit(1)
